@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleBlogBackend;
 using SimpleBlogBackend.Models;
+using SimpleBlogBackend.Dtos;
+
 
 namespace SimpleBlogBackend.Controllers
 {
@@ -35,37 +37,38 @@ namespace SimpleBlogBackend.Controllers
         }
 
         // POST: api/User
-        [HttpPost]
-        public IActionResult CreateUser([FromBody] User user)
-        {
-            if (user == null)
-                return BadRequest();
+       [HttpPost]
+public IActionResult CreateUser([FromBody] UserDto userDto)
+{
+    if (string.IsNullOrWhiteSpace(userDto.Username) || string.IsNullOrWhiteSpace(userDto.Email))
+        return BadRequest("Username and Email are required.");
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+    var user = new User
+    {
+        Username = userDto.Username,
+        Email = userDto.Email
+    };
 
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
-        }
+    _context.Users.Add(user);
+    _context.SaveChanges();
 
-        // PUT: api/User/{id}
-        [HttpPut("{id}")]
-        public IActionResult UpdateUser(int id, [FromBody] User updatedUser)
-        {
-            if (id != updatedUser.Id)
-                return BadRequest();
+    return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+}
 
-            var existingUser = _context.Users.Find(id);
-            if (existingUser == null)
-                return NotFound();
+// PUT: api/User/{id}
+[HttpPut("{id}")]
+public IActionResult UpdateUser(int id, [FromBody] UserDto userDto)
+{
+    var existingUser = _context.Users.Find(id);
+    if (existingUser == null)
+        return NotFound();
 
-            existingUser.Username = updatedUser.Username;
-            existingUser.Email = updatedUser.Email;
+    existingUser.Username = userDto.Username;
+    existingUser.Email = userDto.Email;
 
-            _context.SaveChanges();
-            return NoContent();
-        }
-
-        // DELETE: api/User/{id}
+    _context.SaveChanges();
+    return NoContent();
+}
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {

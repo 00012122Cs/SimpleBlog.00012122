@@ -3,17 +3,26 @@ using SimpleBlogBackend;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
-builder.Services.AddControllers(); // Add this line to register controllers
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
+// Add other services
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register the DbContext
 builder.Services.AddDbContext<SimpleBlogContext>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -22,9 +31,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Remove this line if you don’t need authorization
+// Use the CORS policy
+app.UseCors("AllowAllOrigins");
+
+// Uncomment this line if you have authorization middleware
 // app.UseAuthorization();
 
-app.MapControllers(); // Map controller endpoints
+app.MapControllers();
 
 app.Run();

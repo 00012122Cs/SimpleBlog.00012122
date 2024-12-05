@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleBlogBackend;
 using SimpleBlogBackend.Models;
+using SimpleBlogBackend.Dtos; // Correct namespace for PostDto
 
 namespace SimpleBlogBackend.Controllers
 {
@@ -19,7 +20,18 @@ namespace SimpleBlogBackend.Controllers
         [HttpGet]
         public IActionResult GetPosts()
         {
-            var posts = _context.Posts.ToList();
+            // Return a simplified list of posts with basic details
+            var posts = _context.Posts
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Title,
+                    p.Content,
+                    p.CreatedAt,
+                    p.UserId
+                })
+                .ToList();
+
             return Ok(posts);
         }
 
@@ -27,7 +39,19 @@ namespace SimpleBlogBackend.Controllers
         [HttpGet("{id}")]
         public IActionResult GetPostById(int id)
         {
-            var post = _context.Posts.Find(id);
+            // Find the post by ID
+            var post = _context.Posts
+                .Where(p => p.Id == id)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Title,
+                    p.Content,
+                    p.CreatedAt,
+                    p.UserId
+                })
+                .FirstOrDefault();
+
             if (post == null)
                 return NotFound();
 
@@ -36,31 +60,61 @@ namespace SimpleBlogBackend.Controllers
 
         // POST: api/Post
         [HttpPost]
-        public IActionResult CreatePost([FromBody] Post post)
+        public IActionResult CreatePost([FromBody] PostDto postDto)
         {
-            if (post == null)
-                return BadRequest();
+            // Validate the input
+            if (string.IsNullOrWhiteSpace(postDto.Title) || string.IsNullOrWhiteSpace(postDto.Content))
+                return BadRequest("Title and Content are required.");
+
+            // Verify that the user exists
+            var userExists = _context.Users.Any(u => u.Id == postDto.UserId);
+            if (!userExists)
+                return BadRequest("Invalid User ID.");
+
+            // Create and save the new post
+            var post = new Post
+            {
+                Title = postDto.Title,
+                Content = postDto.Content,
+                CreatedAt = DateTime.Now,
+                UserId = postDto.UserId
+            };
 
             _context.Posts.Add(post);
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetPostById), new { id = post.Id }, post);
+            return CreatedAtAction(nameof(GetPostById), new { id = post.Id }, new
+            {
+                post.Id,
+                post.Title,
+                post.Content,
+                post.CreatedAt,
+                post.UserId
+            });
         }
 
         // PUT: api/Post/{id}
         [HttpPut("{id}")]
-        public IActionResult UpdatePost(int id, [FromBody] Post updatedPost)
+        public IActionResult UpdatePost(int id, [FromBody] PostDto postDto)
         {
-            if (id != updatedPost.Id)
-                return BadRequest();
+            // Validate the input
+            if (string.IsNullOrWhiteSpace(postDto.Title) || string.IsNullOrWhiteSpace(postDto.Content))
+                return BadRequest("Title and Content are required.");
 
-            var existingPost = _context.Posts.Find(id);
-            if (existingPost == null)
+            // Find the existing post
+            var post = _context.Posts.Find(id);
+            if (post == null)
                 return NotFound();
 
-            existingPost.Title = updatedPost.Title;
-            existingPost.Content = updatedPost.Content;
-            existingPost.CreatedAt = updatedPost.CreatedAt;
+            // Verify that the user exists
+            var userExists = _context.Users.Any(u => u.Id == postDto.UserId);
+            if (!userExists)
+                return BadRequest("Invalid User ID.");
+
+            // Update the post details
+            post.Title = postDto.Title;
+            post.Content = postDto.Content;
+            post.UserId = postDto.UserId;
 
             _context.SaveChanges();
             return NoContent();
@@ -70,6 +124,7 @@ namespace SimpleBlogBackend.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeletePost(int id)
         {
+            // Find the post to delete
             var post = _context.Posts.Find(id);
             if (post == null)
                 return NotFound();

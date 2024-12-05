@@ -1,0 +1,9 @@
+<div class="user-detail-container" *ngIf="user">
+    <h3>{{ user.username }}</h3>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <h4>Posts:</h4>
+    <ul>
+      <li *ngFor="let post of user.posts">{{ post.title }}</li>
+    </ul>
+  </div>
+  

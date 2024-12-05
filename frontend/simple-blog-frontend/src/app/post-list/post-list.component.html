@@ -1,0 +1,19 @@
+<div class="post-list-container">
+    <h2>Posts</h2>
+    <a class="btn btn-create" routerLink="/posts/new">Create New Post</a>
+    <ul class="post-list">
+      <li class="post-item" *ngFor="let post of posts">
+        <div class="post-header">
+          <h3>{{ post.title }}</h3>
+          <p>Posted on: {{ post.createdAt | date }}</p>
+        </div>
+        <p class="post-content">{{ post.content }}</p>
+        <div class="post-actions">
+          <a class="btn btn-details" [routerLink]="['/posts', post.id]">Details</a>
+          <a class="btn btn-edit" [routerLink]="['/posts/edit', post.id]">Edit</a>
+          <button class="btn btn-delete" (click)="deletePost(post.id)">Delete</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+  

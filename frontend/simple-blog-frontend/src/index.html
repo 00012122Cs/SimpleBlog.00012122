@@ -2,12 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>SimpleBlogFrontend</title>
+  <title>Simple Blog</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A simple blog application to manage posts and users">
+  <meta name="author" content="Your Name">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-<body>
-  <app-root></app-root>
+<body class="mat-typography">
+  <div id="loader" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <h3>Loading...</h3>
+  </div>
+  <app-root style="display: none;"></app-root>
+
+  <script>
+    window.onload = function() {
+      document.getElementById('loader').style.display = 'none';
+      document.querySelector('app-root').style.display = 'block';
+    };
+  </script>
 </body>
 </html>
